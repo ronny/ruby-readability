@@ -39,7 +39,7 @@ module Readability
       @html.css("script, style").each { |i| i.remove }
       remove_unlikely_candidates! if @remove_unlikely_candidates
       transform_misused_divs_into_paragraphs!
-      
+
       @candidates     = score_paragraphs(options[:min_text_length])
       @best_candidate = select_best_candidate(@candidates)
     end
@@ -96,6 +96,23 @@ module Readability
         end
 
       (list_images.empty? and content != @html) ? images(@html, true) : list_images
+    end
+
+    def videos
+      result = []
+      return result if content.nil?
+
+      player = @html.css('meta[name="twitter:player"]').first
+      width = @html.css('meta[property="twitter:player:width"]').first
+      height = @html.css('meta[property="twitter:player:height"]').first
+      unless player.nil? || width.nil? || height.nil?
+        result << {
+          :url => player["value"],
+          :width => width["content"].to_i,
+          :height => height["content"].to_i
+        }
+      end
+      result
     end
 
     def load_image(url)
@@ -316,7 +333,7 @@ module Readability
       end
     end
 
-    def sanitize(node, candidates, options = {})    
+    def sanitize(node, candidates, options = {})
       node.css("h1, h2, h3, h4, h5, h6").each do |header|
         header.remove if class_weight(header) < 0 || get_link_density(header) > 0.33
       end

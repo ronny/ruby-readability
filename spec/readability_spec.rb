@@ -113,6 +113,30 @@ describe Readability do
     end
   end
 
+  describe "videos" do
+    describe "youtube" do
+      before(:each) do
+        @youtube = File.read(File.dirname(__FILE__) + "/fixtures/youtube.html")
+      end
+
+      it "should include embedded video" do
+        @doc = Readability::Document.new(@youtube)
+        @doc.videos.should == [{:url => "https://www.youtube.com/embed/CWXJ4q-HMUE", :width => 1280, :height => 720}]
+      end
+    end
+
+    describe "unsupported sites" do
+      before(:each) do
+        @bbc = File.read(File.dirname(__FILE__) + "/fixtures/bbc.html")
+      end
+
+      it "should not include any embedded video" do
+        @doc = Readability::Document.new(@bbc)
+        @doc.videos.should == []
+      end
+    end
+  end
+
   describe "transformMisusedDivsIntoParagraphs" do
     before do
       @doc = Readability::Document.new(@simple_html_fixture)
@@ -365,37 +389,37 @@ describe Readability do
       Readability::Document.new('<html><head><meta http-equiv="refresh" content="0;URL=http://example.com"></head></html>').content.should == '<div><div></div></div>'
     end
   end
-  
+
   describe "No side-effects" do
     before do
       @bbc      = File.read(File.dirname(__FILE__) + "/fixtures/bbc.html")
       @nytimes  = File.read(File.dirname(__FILE__) + "/fixtures/nytimes.html")
       @thesum   = File.read(File.dirname(__FILE__) + "/fixtures/thesun.html")
     end
-    
+
     it "should not have any side-effects when calling content() and then images()" do
-      @doc=Readability::Document.new(@nytimes, :tags => %w[div p img a], :attributes => %w[src href], :remove_empty_nodes => false, 
+      @doc=Readability::Document.new(@nytimes, :tags => %w[div p img a], :attributes => %w[src href], :remove_empty_nodes => false,
       :do_not_guess_encoding => true)
       @doc.images.should == ["http://graphics8.nytimes.com/images/2011/12/02/opinion/02fixes-freelancersunion/02fixes-freelancersunion-blog427.jpg"]
       @doc.content
       @doc.images.should == ["http://graphics8.nytimes.com/images/2011/12/02/opinion/02fixes-freelancersunion/02fixes-freelancersunion-blog427.jpg"]
     end
-    
+
     it "should not have any side-effects when calling content() multiple times" do
-       @doc=Readability::Document.new(@nytimes, :tags => %w[div p img a], :attributes => %w[src href], :remove_empty_nodes => false, 
+       @doc=Readability::Document.new(@nytimes, :tags => %w[div p img a], :attributes => %w[src href], :remove_empty_nodes => false,
         :do_not_guess_encoding => true)
        @doc.content.should ==  @doc.content
     end
-    
+
     it "should not have any side-effects when calling content and images multiple times" do
-       @doc=Readability::Document.new(@nytimes, :tags => %w[div p img a], :attributes => %w[src href], :remove_empty_nodes => false, 
+       @doc=Readability::Document.new(@nytimes, :tags => %w[div p img a], :attributes => %w[src href], :remove_empty_nodes => false,
         :do_not_guess_encoding => true)
        @doc.images.should == ["http://graphics8.nytimes.com/images/2011/12/02/opinion/02fixes-freelancersunion/02fixes-freelancersunion-blog427.jpg"]
        @doc.content.should ==  @doc.content
        @doc.images.should == ["http://graphics8.nytimes.com/images/2011/12/02/opinion/02fixes-freelancersunion/02fixes-freelancersunion-blog427.jpg"]
     end
-  
+
   end
-  
-  
+
+
 end
